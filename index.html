@@ -157,8 +157,7 @@
     <p id="resultLine4"></p>
     <button onclick="restartGame()">🔄 Ещё раз</button>
     <button class="btn-secondary" onclick="goToMenu()">🏠 Меню</button>
-</div>
-<script>
+</div><script>
 // ============ ОСНОВНЫЕ ПЕРЕМЕННЫЕ ============
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -366,8 +365,7 @@ function updateParticles() {
         ctx.fillRect(p.x-2, p.y-2, 4, 4);
         ctx.globalAlpha = 1;
     }
-}
-    <script>
+}<script>
 function initGame(type) {
     switch(type) {
         case 'catch': player = { w: 60, h: 38, x: W/2-30, y: H-68 }; break;
@@ -392,8 +390,7 @@ function initGame(type) {
         case 'bowling': bowlingBall = null; bowlingPins = [];
             for(let i=0; i<5; i++) bowlingPins.push({ x: W/2-40+i*20, y: 80, w: 14, h: 35, fallen: false }); break;
     }
-}
-    <script>
+}<script>
 function updateGame(type) {
     switch(type) {
         case 'catch': updateCatch('⭐', '💣', '#ffcc00', '#ff4444', 30); break;
@@ -778,8 +775,7 @@ function updateBowling() {
             }
         }
     }
-}
-    <script>
+}<script>
 // ============ УПРАВЛЕНИЕ ============
 canvas.addEventListener('mousemove', e => {
     let rect = canvas.getBoundingClientRect();
