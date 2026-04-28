@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Игровой центр Мини Бро - 15 игр</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: linear-gradient(135deg, #0d0d1a, #1a1a2e, #16213e);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: Arial, sans-serif;
+            touch-action: manipulation;
+            user-select: none;
+            padding: 10px;
+        }
+        #mainMenu {
+            text-align: center;
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            padding: 20px 15px;
+            border-radius: 25px;
+            border: 2px solid rgba(255,255,255,0.1);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+            max-width: 400px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        #mainMenu h1 { color: #e94560; font-size: 24px; margin-bottom: 5px; }
+        .subtitle { color: #aaa; font-size: 13px; margin-bottom: 10px; }
+        .emoji-big { font-size: 45px; display: block; animation: float 3s infinite; }
+        @keyframes float {
+            0%,100% { transform: translateY(0); }
+            50% { transform: translateY(-12px); }
+        }
+        .category-title {
+            color: #ffcc00;
+            font-size: 16px;
+            margin: 12px 0 5px 0;
+            text-align: left;
+            padding-left: 10px;
+        }
+        .game-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 5px; }
+        .game-btn {
+            background: rgba(255,255,255,0.06);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 10px 14px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            text-align: left;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+        }
+        .game-btn:active { transform: scale(0.97); background: rgba(233,69,96,0.3); }
+        .game-btn .game-emoji { font-size: 24px; min-width: 30px; text-align: center; }
+        .game-btn .game-name { font-weight: bold; font-size: 14px; color: #fff; }
+        .game-btn .game-desc { font-size: 11px; color: #888; }
+
+        #gameContainer { display: none; flex-direction: column; align-items: center; gap: 8px; width: 100%; max-width: 400px; }
+        canvas { background: #16213e; border: 2px solid #e94560; border-radius: 15px; max-width: 100%; display: block; }
+        #gameUI { display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 360px; }
+        #backBtn { background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); padding: 6px 14px; border-radius: 15px; cursor: pointer; font-size: 13px; }
+        #gameScore { color: #ffcc00; font-weight: bold; font-size: 16px; }
+
+        #resultScreen {
+            display: none;
+            text-align: center;
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            padding: 20px 15px;
+            border-radius: 25px;
+            border: 2px solid rgba(255,255,255,0.1);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+            max-width: 400px;
+            width: 100%;
+            color: white;
+        }
+        .result-emoji { font-size: 50px; display: block; animation: float 2s infinite; }
+        #resultScreen h2 { color: #e94560; margin: 8px 0; font-size: 20px; }
+        #resultScreen p { color: #ddd; margin: 3px 0; font-size: 14px; }
+        #resultScreen button {
+            background: #e94560; color: white; border: none;
+            padding: 10px 25px; border-radius: 25px; cursor: pointer;
+            font-size: 14px; margin: 6px 4px; width: 42%;
+        }
+        #resultScreen button:active { transform: scale(0.95); }
+        .btn-secondary { background: rgba(255,255,255,0.1) !important; border: 1px solid rgba(255,255,255,0.2) !important; }
+    </style>
+</head>
+<body>
+
+<div id="mainMenu">
+    <span class="emoji-big">🎮</span>
+    <h1>Игровой центр</h1>
+    <p class="subtitle">Мини Бро — 15 игр</p>
+    
+    <div class="category-title">🧺 Ловилки</div>
+    <div class="game-list">
+        <button class="game-btn" onclick="startGame('catch')"><span class="game-emoji">⭐</span><span class="game-info"><span class="game-name">Звёздный улов</span><span class="game-desc">Лови звёзды, уворачивайся от бомб</span></span></button>
+        <button class="game-btn" onclick="startGame('hearts')"><span class="game-emoji">💖</span><span class="game-info"><span class="game-name">Сердечный дождь</span><span class="game-desc">Собирай сердечки</span></span></button>
+        <button class="game-btn" onclick="startGame('candy')"><span class="game-emoji">🍬</span><span class="game-info"><span class="game-name">Конфетный град</span><span class="game-desc">Лови конфеты, уклоняйся от перца</span></span></button>
+    </div>
+    
+    <div class="category-title">🦘 Прыгалки</div>
+    <div class="game-list">
+        <button class="game-btn" onclick="startGame('jump')"><span class="game-emoji">🌸</span><span class="game-info"><span class="game-name">Цветочек-попрыгун</span><span class="game-desc">Прыгай через кактусы</span></span></button>
+        <button class="game-btn" onclick="startGame('rabbit')"><span class="game-emoji">🐰</span><span class="game-info"><span class="game-name">Космо-кролик</span><span class="game-desc">Прыгай по платформам</span></span></button>
+        <button class="game-btn" onclick="startGame('frog')"><span class="game-emoji">🐸</span><span class="game-info"><span class="game-name">Лягушка на кувшинках</span><span class="game-desc">Прыгай с кувшинки на кувшинку</span></span></button>
+    </div>
+    
+    <div class="category-title">🚀 Леталки</div>
+    <div class="game-list">
+        <button class="game-btn" onclick="startGame('flight')"><span class="game-emoji">🚀</span><span class="game-info"><span class="game-name">Ракета в космосе</span><span class="game-desc">Уклоняйся от астероидов</span></span></button>
+        <button class="game-btn" onclick="startGame('butterfly')"><span class="game-emoji">🦋</span><span class="game-info"><span class="game-name">Бабочка в саду</span><span class="game-desc">Лети между цветов</span></span></button>
+        <button class="game-btn" onclick="startGame('bird')"><span class="game-emoji">🐦</span><span class="game-info"><span class="game-name">Птичка в облаках</span><span class="game-desc">Лети сквозь облака</span></span></button>
+    </div>
+    
+    <div class="category-title">🎯 Кликеры</div>
+    <div class="game-list">
+        <button class="game-btn" onclick="startGame('tap')"><span class="game-emoji">🎵</span><span class="game-info"><span class="game-name">Лопни шарик</span><span class="game-desc">Тапай по шарикам</span></span></button>
+        <button class="game-btn" onclick="startGame('firefly')"><span class="game-emoji">🔦</span><span class="game-info"><span class="game-name">Поймай светлячка</span><span class="game-desc">Лови светлячков в темноте</span></span></button>
+        <button class="game-btn" onclick="startGame('smash')"><span class="game-emoji">💥</span><span class="game-info"><span class="game-name">Разбей астероид</span><span class="game-desc">Разбивай астероиды тапом</span></span></button>
+    </div>
+    
+    <div class="category-title">🏀 Спорт</div>
+    <div class="game-list">
+        <button class="game-btn" onclick="startGame('basket')"><span class="game-emoji">🏀</span><span class="game-info"><span class="game-name">Звёздный баскетбол</span><span class="game-desc">Забрасывай звёзды в кольцо</span></span></button>
+        <button class="game-btn" onclick="startGame('tennis')"><span class="game-emoji">🎾</span><span class="game-info"><span class="game-name">Цветочный теннис</span><span class="game-desc">Отбивай цветы ракеткой</span></span></button>
+        <button class="game-btn" onclick="startGame('bowling')"><span class="game-emoji">🎳</span><span class="game-info"><span class="game-name">Фруктовый боулинг</span><span class="game-desc">Сбивай фрукты шаром</span></span></button>
+    </div>
+</div>
+
+<div id="gameContainer">
+    <div id="gameUI">
+        <button id="backBtn" onclick="goToMenu()">← Меню</button>
+        <span id="gameScore"></span>
+    </div>
+    <canvas id="gameCanvas" width="360" height="600"></canvas>
+</div>
+
+<div id="resultScreen">
+    <span class="result-emoji" id="resultEmoji"></span>
+    <h2 id="resultTitle"></h2>
+    <p id="resultMsg"></p>
+    <p id="resultLine1"></p>
+    <p id="resultLine2"></p>
+    <p id="resultLine3"></p>
+    <p id="resultLine4"></p>
+    <button onclick="restartGame()">🔄 Ещё раз</button>
+    <button class="btn-secondary" onclick="goToMenu()">🏠 Меню</button>
+</div>
+<script>
+// ============ ОСНОВНЫЕ ПЕРЕМЕННЫЕ ============
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const W = canvas.width, H = canvas.height;
+
+const mainMenu = document.getElementById('mainMenu');
+const gameContainer = document.getElementById('gameContainer');
+const resultScreen = document.getElementById('resultScreen');
+const gameScoreDisplay = document.getElementById('gameScore');
+const resultEmoji = document.getElementById('resultEmoji');
+const resultTitle = document.getElementById('resultTitle');
+const resultMsg = document.getElementById('resultMsg');
+const resultLine1 = document.getElementById('resultLine1');
+const resultLine2 = document.getElementById('resultLine2');
+const resultLine3 = document.getElementById('resultLine3');
+const resultLine4 = document.getElementById('resultLine4');
+
+let currentGame = '';
+let gameRunning = false;
+let gameEnded = false;
+let animationId = null;
+let mouseX = W / 2;
+let frame = 0;
+let score = 0;
+let winScore = 0;
+let speed = 2;
+let lives = 3;
+
+// Игровые объекты
+let player, items = [], obstacles = [], stars = [], particles = [];
+let rocket, rocketVy;
+let basketBall, ballX, ballY, ballVX, ballVY, hoopX, hoopY, ballShot, ballMoving;
+let platformItems = [];
+let tennisBall, tennisBat;
+let bowlingBall, bowlingPins = [];
+let fireflyItems = [];
+let smashItems = [];
+
+// ============ МЕНЮ ============
+function goToMenu() {
+    if (animationId) cancelAnimationFrame(animationId);
+    animationId = null;
+    mainMenu.style.display = 'block';
+    gameContainer.style.display = 'none';
+    resultScreen.style.display = 'none';
+    currentGame = '';
+    gameRunning = false;
+    resetAllObjects();
+}
+
+function resetAllObjects() {
+    player = null; items = []; obstacles = []; stars = []; particles = [];
+    rocket = null; rocketVy = 0;
+    basketBall = null; ballX = 0; ballY = 0; ballVX = 0; ballVY = 0; hoopX = 0; hoopY = 0; ballShot = false; ballMoving = false;
+    platformItems = [];
+    tennisBall = null; tennisBat = null;
+    bowlingBall = null; bowlingPins = [];
+    fireflyItems = [];
+    smashItems = [];
+}
+
+function showResult(won) {
+    gameRunning = false;
+    if (animationId) cancelAnimationFrame(animationId);
+    animationId = null;
+    gameContainer.style.display = 'none';
+    resultScreen.style.display = 'block';
+    
+    if (won) {
+        resultEmoji.innerText = '🏆';
+        resultTitle.innerText = 'Победа!';
+        resultMsg.innerText = 'Ты невероятна!';
+        resultLine1.innerText = '✨ Ты самая крутая!';
+        resultLine2.innerText = '💫 Твоя ловкость впечатляет';
+        resultLine3.innerText = '🤗 Ты делаешь мир лучше';
+        resultLine4.innerText = '💖 Спасибо за дружбу!';
+    } else {
+        resultEmoji.innerText = '💪';
+        resultTitle.innerText = 'Не сдавайся!';
+        resultMsg.innerText = 'Попробуй ещё раз';
+        resultLine1.innerText = '🍀 Всё получится';
+        resultLine2.innerText = '✨ Я в тебя верю';
+        resultLine3.innerText = '🤗 Ты справишься';
+        resultLine4.innerText = '🔄 Давай ещё попытку!';
+    }
+}
+
+function restartGame() {
+    resultScreen.style.display = 'none';
+    resetAllObjects();
+    startGame(currentGame);
+}
+
+function updateScoreDisplay() {
+    gameScoreDisplay.innerText = `⭐ ${score}/${winScore}`;
+}
+
+function endCurrentGame(won) {
+    if (gameEnded) return;
+    gameEnded = true;
+    showResult(won);
+}
+
+// ============ ЗАПУСК ИГР ============
+function startGame(gameType) {
+    if (animationId) cancelAnimationFrame(animationId);
+    resetAllObjects();
+    currentGame = gameType;
+    mainMenu.style.display = 'none';
+    resultScreen.style.display = 'none';
+    gameContainer.style.display = 'flex';
+    gameRunning = true;
+    gameEnded = false;
+    score = 0;
+    frame = 0;
+    speed = 2;
+    lives = 3;
+    mouseX = W / 2;
+    particles = [];
+    items = [];
+    obstacles = [];
+    stars = [];
+    platformItems = [];
+    fireflyItems = [];
+    smashItems = [];
+    bowlingPins = [];
+    
+    updateScoreDisplay();
+    
+    switch(gameType) {
+        case 'catch': winScore = 30; break;
+        case 'hearts': winScore = 25; break;
+        case 'candy': winScore = 30; break;
+        case 'jump': winScore = 40; break;
+        case 'rabbit': winScore = 20; break;
+        case 'frog': winScore = 25; break;
+        case 'flight': winScore = 20; break;
+        case 'butterfly': winScore = 25; break;
+        case 'bird': winScore = 20; break;
+        case 'tap': winScore = 30; break;
+        case 'firefly': winScore = 20; break;
+        case 'smash': winScore = 30; break;
+        case 'basket': winScore = 15; break;
+        case 'tennis': winScore = 15; break;
+        case 'bowling': winScore = 20; break;
+    }
+    
+    initGame(gameType);
+    
+    function gameLoop() {
+        if (!gameRunning) return;
+        frame++;
+        ctx.clearRect(0, 0, W, H);
+        
+        drawStarBackground();
+        updateGame(gameType);
+        updateParticles();
+        updateScoreDisplay();
+        
+        if (!gameEnded && score >= winScore) {
+            endCurrentGame(true);
+            return;
+        }
+        
+        animationId = requestAnimationFrame(gameLoop);
+    }
+    
+    animationId = requestAnimationFrame(gameLoop);
+}
+
+function drawStarBackground() {
+    for(let i = 0; i < 25; i++) {
+        let y = (frame * (i % 3 + 1) + i * 30) % H;
+        ctx.fillStyle = `rgba(255,255,255,${0.15 + (i % 3) * 0.15})`;
+        ctx.fillRect(i * 15, y, 2, 2);
+    }
+}
+
+// ============ ЧАСТИЦЫ ============
+class ParticleClass {
+    constructor(x, y, color) {
+        this.x = x; this.y = y;
+        this.vx = (Math.random() - 0.5) * 5;
+        this.vy = (Math.random() - 0.5) * 5;
+        this.life = 1;
+        this.color = color;
+    }
+}
+
+function addParticles(x, y, color, count) {
+    for(let i = 0; i < count; i++) {
+        particles.push(new ParticleClass(x, y, color));
+    }
+}
+
+function updateParticles() {
+    for (let i = particles.length-1; i >= 0; i--) {
+        let p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.life -= 0.03;
+        if (p.life <= 0) { particles.splice(i,1); continue; }
+        ctx.globalAlpha = p.life;
+        ctx.fillStyle = p.color;
+        ctx.fillRect(p.x-2, p.y-2, 4, 4);
+        ctx.globalAlpha = 1;
+    }
+}
+<script>
+function initGame(type) {
+    switch(type) {
+        case 'catch': player = { w: 60, h: 38, x: W/2-30, y: H-68 }; break;
+        case 'hearts': player = { w: 60, h: 38, x: W/2-30, y: H-68 }; break;
+        case 'candy': player = { w: 60, h: 38, x: W/2-30, y: H-68 }; break;
+        case 'jump': player = { x: 65, y: H-55, vy: 0, grounded: true, w: 28, h: 28 }; break;
+        case 'rabbit': player = { x: 50, y: H-120, vy: 0, grounded: false, w: 28, h: 28 };
+            platformItems = [{ x: 40, y: H-120, w: 80, h: 10 }, { x: 160, y: H-180, w: 70, h: 10 }, { x: 260, y: H-140, w: 60, h: 10 }]; break;
+        case 'frog': player = { x: W/2-15, y: H-70, vy: 0, grounded: true, w: 30, h: 20 };
+            platformItems = [];
+            for(let i=0; i<5; i++) platformItems.push({ x: Math.random()*(W-60), y: H-100-i*80, w: 60, h: 15 }); break;
+        case 'flight': rocket = { x: 75, y: H/2, vy: 0, size: 28 }; break;
+        case 'butterfly': rocket = { x: 75, y: H/2, vy: 0, size: 28 }; break;
+        case 'bird': rocket = { x: 75, y: H/2, vy: 0, size: 28 }; break;
+        case 'tap': break;
+        case 'firefly': for(let i=0; i<5; i++) fireflyItems.push({ x: Math.random()*(W-30)+15, y: Math.random()*(H-100)+50, life: 120, size: 20 }); break;
+        case 'smash': break;
+        case 'basket': hoopX = W/2 + (Math.random()*160-80); hoopY = 130 + Math.random()*130;
+            ballX = W/2; ballY = H-50; ballMoving = false; break;
+        case 'tennis': tennisBat = { x: W/2-35, y: H-50, w: 70, h: 15 };
+            tennisBall = { x: W/2, y: 50, vx: 3, vy: 3, size: 15 }; break;
+        case 'bowling': bowlingBall = null; bowlingPins = [];
+            for(let i=0; i<5; i++) bowlingPins.push({ x: W/2-40+i*20, y: 80, w: 14, h: 35, fallen: false }); break;
+    }
+}
+  <script>
+function updateGame(type) {
+    switch(type) {
+        case 'catch': updateCatch('⭐', '💣', '#ffcc00', '#ff4444', 30); break;
+        case 'hearts': updateCatch('💖', '💔', '#ff69b4', '#ff0000', 25); break;
+        case 'candy': updateCatch('🍬', '🌶️', '#ff69b4', '#ff6600', 30); break;
+        case 'jump': updateJump('🌸', '🌵'); break;
+        case 'rabbit': updateRabbit(); break;
+        case 'frog': updateFrog(); break;
+        case 'flight': updateFlight('🚀', '☄️', '⭐'); break;
+        case 'butterfly': updateFlight('🦋', '🕷️', '🌺'); break;
+        case 'bird': updateFlight('🐦', '⚡', '☁️'); break;
+        case 'tap': updateTap(); break;
+        case 'firefly': updateFirefly(); break;
+        case 'smash': updateSmash(); break;
+        case 'basket': updateBasket(); break;
+        case 'tennis': updateTennis(); break;
+        case 'bowling': updateBowling(); break;
+    }
+}
+
+// ============ ИГРЫ-ЛОВИЛКИ ============
+function updateCatch(goodEmoji, badEmoji, goodColor, badColor, win) {
+    let targetX = mouseX - player.w/2;
+    targetX = Math.max(0, Math.min(W - player.w, targetX));
+    player.x += (targetX - player.x) * 0.3;
+    ctx.font = '40px Arial';
+    ctx.fillText('🧺', player.x, player.y + player.h);
+    
+    if (frame % 150 === 0) speed += 0.2;
+    if (Math.random() < 0.04) items.push({ x: Math.random()*(W-30), y: -30, speed: speed+Math.random()*1.5, type: 'good', emoji: goodEmoji, size: 28 });
+    if (Math.random() < 0.015) items.push({ x: Math.random()*(W-30), y: -30, speed: speed+Math.random()*1.5, type: 'bad', emoji: badEmoji, size: 28 });
+    
+    for (let i = items.length-1; i >= 0; i--) {
+        let it = items[i];
+        it.y += it.speed;
+        ctx.font = `${it.size}px Arial`;
+        ctx.fillText(it.emoji, it.x, it.y);
+        
+        if (it.y > H + 50) { items.splice(i,1); continue; }
+        
+        if (it.x > player.x && it.x < player.x + player.w && it.y > player.y && it.y < player.y + player.h) {
+            if (it.type === 'good') {
+                score++;
+                addParticles(it.x, it.y, goodColor, 10);
+            } else {
+                addParticles(it.x, it.y, badColor, 15);
+                endCurrentGame(false);
+                return;
+            }
+            items.splice(i, 1);
+        }
+    }
+}
+
+// ============ ИГРЫ-ПРЫГАЛКИ ============
+function updateJump(playerEmoji, obstacleEmoji) {
+    if (!player) player = { x: 65, y: H-55, vy: 0, grounded: true, w: 28, h: 28 };
+    
+    if (frame % 70 === 0 && obstacles.length < 3) {
+        obstacles.push({ x: W, y: H-40, w: 16, h: 22+Math.random()*18, passed: false, speed: 4+score*0.08 });
+    }
+    
+    player.vy += 0.5;
+    player.y += player.vy;
+    if (player.y >= H - 55) { player.y = H - 55; player.vy = 0; player.grounded = true; }
+    
+    ctx.font = '32px Arial';
+    ctx.fillText(playerEmoji, player.x - 12, player.y + 18);
+    
+    ctx.fillStyle = '#555';
+    ctx.fillRect(0, H-20, W, 20);
+    
+    for (let i = obstacles.length-1; i >= 0; i--) {
+        let o = obstacles[i];
+        o.x -= o.speed;
+        ctx.fillStyle = '#2E7D32';
+        ctx.fillRect(o.x, o.y, o.w, o.h);
+        
+        if (o.x < player.x + player.w && o.x + o.w > player.x && o.y < player.y + player.h && player.y < o.y + o.h) {
+            endCurrentGame(false);
+            return;
+        }
+        
+        if (!o.passed && o.x + o.w < player.x) { o.passed = true; score++; }
+        if (o.x < -50) obstacles.splice(i, 1);
+    }
+}
+
+function updateRabbit() {
+    if (!player) player = { x: 50, y: H-120, vy: 0, grounded: false, w: 28, h: 28 };
+    
+    player.vy += 0.4;
+    player.y += player.vy;
+    
+    // Проверка платформ
+    player.grounded = false;
+    for(let p of platformItems) {
+        if (player.x + player.w > p.x && player.x < p.x + p.w && 
+            player.y + player.h > p.y && player.y + player.h < p.y + 15 && player.vy > 0) {
+            player.y = p.y - player.h;
+            player.vy = 0;
+            player.grounded = true;
+            if (!p.scored) { p.scored = true; score++; }
+        }
+    }
+    
+    if (player.y > H) endCurrentGame(false);
+    if (player.y < 0) player.y = 0;
+    
+    ctx.font = '32px Arial';
+    ctx.fillText('🐰', player.x - 10, player.y + 20);
+    
+    // Рисуем платформы
+    ctx.fillStyle = '#8B4513';
+    for(let p of platformItems) ctx.fillRect(p.x, p.y, p.w, p.h);
+    
+    // Двигаем платформы влево и создаём новые
+    for(let p of platformItems) p.x -= 1.5;
+    if (platformItems[platformItems.length-1].x < W - 100) {
+        platformItems.push({ x: W, y: 100 + Math.random()*(H-200), w: 60+Math.random()*30, h: 10, scored: false });
+        if (platformItems.length > 6) platformItems.shift();
+    }
+}
+
+function updateFrog() {
+    if (!player) player = { x: W/2-15, y: H-70, vy: 0, grounded: true, w: 30, h: 20 };
+    
+    player.vy += 0.5;
+    player.y += player.vy;
+    
+    player.grounded = false;
+    for(let p of platformItems) {
+        if (player.x + player.w > p.x && player.x < p.x + p.w && 
+            player.y + player.h > p.y && player.y + player.h < p.y + 20 && player.vy > 0) {
+            player.y = p.y - player.h;
+            player.vy = 0;
+            player.grounded = true;
+            if (!p.scored) { p.scored = true; score++; }
+        }
+    }
+    
+    if (player.y > H + 30) { endCurrentGame(false); return; }
+    
+    ctx.font = '32px Arial';
+    ctx.fillText('🐸', player.x - 5, player.y + 18);
+    
+    // Кувшинки
+    for(let p of platformItems) {
+        ctx.fillStyle = p.scored ? '#4CAF50' : '#2E7D32';
+        ctx.beginPath();
+        ctx.arc(p.x + p.w/2, p.y + p.h/2, p.w/2, 0, Math.PI*2);
+        ctx.fill();
+    }
+    
+    // Двигаем кувшинки
+    for(let p of platformItems) p.y += 0.5;
+    if (platformItems[0].y > H + 50) {
+        platformItems.shift();
+        platformItems.push({ x: Math.random()*(W-60), y: -40, w: 50, h: 15, scored: false });
+    }
+    
+    // Следуем за лягушкой
+    if (player.y < 200) {
+        for(let p of platformItems) p.y += (200 - player.y) * 0.1;
+        player.y += (200 - player.y) * 0.1;
+    }
+}
+
+// ============ ИГРЫ-ЛЕТАЛКИ ============
+function updateFlight(playerEmoji, badEmoji, goodEmoji) {
+    if (!rocket) rocket = { x: 75, y: H/2, vy: 0, size: 28 };
+    
+    rocket.vy += 0.35;
+    rocket.y += rocket.vy;
+    if (rocket.y < 0) rocket.y = 0;
+    if (rocket.y + rocket.size > H) { endCurrentGame(false); return; }
+    
+    ctx.font = `${rocket.size}px Arial`;
+    ctx.fillText(playerEmoji, rocket.x - rocket.size/2, rocket.y + rocket.size/2);
+    
+    if (frame % 55 === 0) {
+        if (Math.random() < 0.65) stars.push({ x: W, y: Math.random()*(H-100)+50, speed: 3, size: 22 });
+        else obstacles.push({ x: W, y: Math.random()*(H-100)+50, speed: 3, size: 28 });
+    }
+    
+    for (let i = stars.length-1; i >= 0; i--) {
+        let s = stars[i];
+        s.x -= s.speed;
+        ctx.font = `${s.size}px Arial`;
+        ctx.fillText(goodEmoji, s.x, s.y);
+        if (Math.abs(s.x - rocket.x) < 22 && Math.abs(s.y - (rocket.y+rocket.size/2)) < 22) {
+            stars.splice(i,1);
+            score++;
+            addParticles(s.x, s.y, '#ffcc00', 8);
+        }
+    }
+    
+    for (let i = obstacles.length-1; i >= 0; i--) {
+        let o = obstacles[i];
+        o.x -= o.speed;
+        ctx.font = `${o.size}px Arial`;
+        ctx.fillText(badEmoji, o.x, o.y);
+        if (Math.abs(o.x - rocket.x) < 25 && Math.abs(o.y - (rocket.y+rocket.size/2)) < 25) {
+            endCurrentGame(false);
+            return;
+        }
+    }
+}
+
+// ============ ИГРЫ-КЛИКЕРЫ ============
+function updateTap() {
+    if (frame % 180 === 0) speed += 0.3;
+    if (Math.random() < 0.035) items.push({ x: Math.random()*(W-40)+20, y: -30, speed: speed+Math.random()*1.5, type: 'ball', size: 30 });
+    if (Math.random() < 0.012) items.push({ x: Math.random()*(W-40)+20, y: -30, speed: speed+Math.random()*1.5, type: 'bomb', size: 30 });
+    
+    for (let i = items.length-1; i >= 0; i--) {
+        let it = items[i];
+        it.y += it.speed;
+        ctx.font = `${it.size}px Arial`;
+        ctx.fillText(it.type === 'ball' ? '🟣' : '💣', it.x - it.size/2, it.y + it.size/2);
+        if (it.y > H + 60) { items.splice(i,1); }
+    }
+}
+
+function updateFirefly() {
+    ctx.fillStyle = 'rgba(0,0,0,0.15)';
+    ctx.fillRect(0, 0, W, H);
+    
+    for(let i = fireflyItems.length-1; i >= 0; i--) {
+        let f = fireflyItems[i];
+        f.life--;
+        f.x += (Math.random()-0.5)*3;
+        f.y += (Math.random()-0.5)*3;
+        f.x = Math.max(10, Math.min(W-10, f.x));
+        f.y = Math.max(50, Math.min(H-50, f.y));
+        
+        ctx.fillStyle = `rgba(255,255,100,${f.life/120})`;
+        ctx.beginPath();
+        ctx.arc(f.x, f.y, f.size, 0, Math.PI*2);
+        ctx.fill();
+        ctx.font = '16px Arial';
+        ctx.fillText('🔦', f.x-8, f.y+8);
+        
+        if (f.life <= 0) fireflyItems.splice(i, 1);
+    }
+    
+    if (frame % 80 === 0 && fireflyItems.length < 8) {
+        fireflyItems.push({ x: Math.random()*(W-30)+15, y: Math.random()*(H-100)+50, life: 100, size: 18 });
+    }
+}
+
+function updateSmash() {
+    if (frame % 60 === 0 && smashItems.length < 5) {
+        smashItems.push({ x: Math.random()*(W-50)+25, y: Math.random()*(H-200)+80, life: 80, size: 30+Math.random()*20 });
+    }
+    
+    for(let i = smashItems.length-1; i >= 0; i--) {
+        let s = smashItems[i];
+        s.life--;
+        ctx.font = `${s.size}px Arial`;
+        ctx.fillText('☄️', s.x - s.size/2, s.y + s.size/2);
+        if (s.life <= 0) smashItems.splice(i, 1);
+    }
+}
+
+// ============ ИГРЫ-СПОРТ ============
+function updateBasket() {
+    ctx.strokeStyle = '#ff6600';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(hoopX, hoopY, 22, 0, Math.PI*2);
+    ctx.stroke();
+    ctx.font = '16px Arial';
+    ctx.fillText('🏀', hoopX-8, hoopY-35);
+    
+    if (!ballMoving) {
+        ballX = Math.max(18, Math.min(W-18, mouseX));
+        ballY = H - 50;
+    }
+    ctx.font = '30px Arial';
+    ctx.fillText('⭐', ballX-15, ballY+10);
+    
+    if (ballMoving) {
+        ballY += ballVY;
+        ballX += ballVX;
+        ballVY += 0.25;
+        
+        let dist = Math.sqrt((ballX-hoopX)**2 + (ballY-hoopY)**2);
+        if (dist < 22 && ballVY > 0) {
+            score++;
+            addParticles(hoopX, hoopY, '#ffcc00', 12);
+            ballMoving = false;
+            ballX = W/2;
+            ballY = H-50;
+            hoopX = W/2 + (Math.random()*180 - 90);
+            hoopY = 120 + Math.random()*140;
+        }
+        
+        if (ballY > H + 50 || ballX < -50 || ballX > W + 50) {
+            ballMoving = false;
+            ballX = W/2;
+            ballY = H-50;
+        }
+    }
+}
+
+function updateTennis() {
+    ctx.fillStyle = '#4CAF50';
+    ctx.fillRect(0, H/2, W, 2);
+    
+    tennisBat.x = Math.max(0, Math.min(W - tennisBat.w, mouseX - tennisBat.w/2));
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(tennisBat.x, tennisBat.y, tennisBat.w, tennisBat.h);
+    ctx.font = '20px Arial';
+    ctx.fillText('🎾', tennisBat.x + tennisBat.w/2 - 10, tennisBat.y - 5);
+    
+    tennisBall.x += tennisBall.vx;
+    tennisBall.y += tennisBall.vy;
+    
+    if (tennisBall.x < 5 || tennisBall.x > W-5) tennisBall.vx *= -1;
+    if (tennisBall.y < 5) tennisBall.vy *= -1;
+    if (tennisBall.y > H) { endCurrentGame(false); return; }
+    
+    if (tennisBall.y + tennisBall.size > tennisBat.y && tennisBall.y < tennisBat.y + tennisBat.h &&
+        tennisBall.x > tennisBat.x && tennisBall.x < tennisBat.x + tennisBat.w && tennisBall.vy > 0) {
+        tennisBall.vy = -Math.abs(tennisBall.vy) - 0.5;
+        tennisBall.vx += (Math.random()-0.5)*2;
+        score++;
+        addParticles(tennisBall.x, tennisBall.y, '#ff69b4', 8);
+    }
+    
+    ctx.font = '18px Arial';
+    ctx.fillText('🌺', tennisBall.x-9, tennisBall.y+6);
+    
+    if (frame % 300 === 0) tennisBall.vy += 0.3;
+}
+
+function updateBowling() {
+    // Кегли
+    for(let i = bowlingPins.length-1; i >= 0; i--) {
+        let pin = bowlingPins[i];
+        if (!pin.fallen) {
+            ctx.fillStyle = '#ff4444';
+            ctx.fillRect(pin.x, pin.y, pin.w, pin.h);
+            ctx.font = '14px Arial';
+            ctx.fillText('🍎', pin.x-3, pin.y+20);
+        }
+    }
+    
+    // Шар
+    if (!bowlingBall) {
+        bowlingBall = { x: Math.max(15, Math.min(W-15, mouseX)), y: H-40, shot: false };
+    }
+    
+    if (!bowlingBall.shot) {
+        bowlingBall.x = Math.max(15, Math.min(W-15, mouseX));
+        bowlingBall.y = H-40;
+    }
+    
+    ctx.font = '28px Arial';
+    ctx.fillText('⚽', bowlingBall.x-14, bowlingBall.y+10);
+    
+    if (bowlingBall.shot) {
+        bowlingBall.y -= 6;
+        
+        for(let pin of bowlingPins) {
+            if (!pin.fallen && Math.abs(bowlingBall.x - (pin.x+pin.w/2)) < 20 && 
+               Math.abs(bowlingBall.y - (pin.y+pin.h/2)) < 30) {
+                pin.fallen = true;
+                score++;
+                addParticles(pin.x+pin.w/2, pin.y+pin.h/2, '#ff6600', 8);
+            }
+        }
+        
+        if (bowlingBall.y < -30 || bowlingBall.y > H + 30) {
+            bowlingBall = null;
+            // Проверка: все ли кегли сбиты
+            let allFallen = bowlingPins.every(p => p.fallen);
+            if (allFallen) {
+                bowlingPins = [];
+                for(let i=0; i<5; i++) bowlingPins.push({ x: W/2-40+i*20, y: 80, w: 14, h: 35, fallen: false });
+            }
+        }
+    }
+}
+  <script>
+// ============ УПРАВЛЕНИЕ ============
+canvas.addEventListener('mousemove', e => {
+    let rect = canvas.getBoundingClientRect();
+    mouseX = e.clientX - rect.left;
+});
+
+canvas.addEventListener('touchmove', e => {
+    e.preventDefault();
+    let touch = e.touches[0];
+    let rect = canvas.getBoundingClientRect();
+    mouseX = touch.clientX - rect.left;
+});
+
+canvas.addEventListener('touchstart', e => {
+    e.preventDefault();
+    let touch = e.touches[0];
+    let rect = canvas.getBoundingClientRect();
+    mouseX = touch.clientX - rect.left;
+    handleTap(touch.clientX - rect.left, touch.clientY - rect.top);
+});
+
+canvas.addEventListener('click', e => {
+    let rect = canvas.getBoundingClientRect();
+    handleTap(e.clientX - rect.left, e.clientY - rect.top);
+});
+
+function handleTap(tx, ty) {
+    if (!gameRunning || gameEnded) return;
+    
+    // Flight games
+    if ((currentGame === 'flight' || currentGame === 'butterfly' || currentGame === 'bird') && rocket) {
+        rocket.vy = -5;
+    }
+    
+    // Jump games
+    if ((currentGame === 'jump' || currentGame === 'rabbit' || currentGame === 'frog') && player && player.grounded) {
+        player.vy = currentGame === 'rabbit' ? -9 : -8;
+        player.grounded = false;
+    }
+    
+    // Tap
+    if (currentGame === 'tap') {
+        for (let i = items.length-1; i >= 0; i--) {
+            let it = items[i];
+            if (Math.abs(tx - it.x) < it.size/1.4 && Math.abs(ty - it.y) < it.size/1.4) {
+                if (it.type === 'ball') {
+                    score++;
+                    addParticles(it.x, it.y, '#ff69b4', 10);
+                } else {
+                    addParticles(it.x, it.y, '#ff4444', 15);
+                    endCurrentGame(false);
+                    return;
+                }
+                items.splice(i,1);
+                break;
+            }
+        }
+    }
+    
+    // Firefly
+    if (currentGame === 'firefly') {
+        for (let i = fireflyItems.length-1; i >= 0; i--) {
+            let f = fireflyItems[i];
+            if (Math.abs(tx - f.x) < f.size + 10 && Math.abs(ty - f.y) < f.size + 10) {
+                fireflyItems.splice(i,1);
+                score++;
+                addParticles(f.x, f.y, '#ffff00', 10);
+                break;
+            }
+        }
+    }
+    
+    // Smash
+    if (currentGame === 'smash') {
+        for (let i = smashItems.length-1; i >= 0; i--) {
+            let s = smashItems[i];
+            if (Math.abs(tx - s.x) < s.size/1.5 && Math.abs(ty - s.y) < s.size/1.5) {
+                smashItems.splice(i,1);
+                score++;
+                addParticles(s.x, s.y, '#ff6600', 20);
+                break;
+            }
+        }
+    }
+    
+    // Basket
+    if (currentGame === 'basket' && !ballMoving) {
+        ballMoving = true;
+        ballVX = (hoopX - ballX) * 0.04;
+        ballVY = (hoopY - ballY) * 0.04 - 3.5;
+    }
+    
+    // Bowling
+    if (currentGame === 'bowling' && bowlingBall && !bowlingBall.shot) {
+        bowlingBall.shot = true;
+    }
+}
+
+document.addEventListener('keydown', e => {
+    if (e.code === 'Space') {
+        e.preventDefault();
+        if ((currentGame === 'flight' || currentGame === 'butterfly' || currentGame === 'bird') && rocket) rocket.vy = -5;
+        if ((currentGame === 'jump' || currentGame === 'rabbit' || currentGame === 'frog') && player && player.grounded) {
+            player.vy = currentGame === 'rabbit' ? -9 : -8;
+            player.grounded = false;
+        }
+        if (currentGame === 'basket' && !ballMoving) {
+            ballMoving = true;
+            ballVX = (hoopX - ballX) * 0.04;
+            ballVY = (hoopY - ballY) * 0.04 - 3.5;
+        }
+        if (currentGame === 'bowling' && bowlingBall && !bowlingBall.shot) bowlingBall.shot = true;
+    }
+});
+</script>
+</body>
+</html>
