@@ -367,7 +367,7 @@ function updateParticles() {
         ctx.globalAlpha = 1;
     }
 }
-<script>
+    <script>
 function initGame(type) {
     switch(type) {
         case 'catch': player = { w: 60, h: 38, x: W/2-30, y: H-68 }; break;
@@ -393,7 +393,7 @@ function initGame(type) {
             for(let i=0; i<5; i++) bowlingPins.push({ x: W/2-40+i*20, y: 80, w: 14, h: 35, fallen: false }); break;
     }
 }
-  <script>
+    <script>
 function updateGame(type) {
     switch(type) {
         case 'catch': updateCatch('⭐', '💣', '#ffcc00', '#ff4444', 30); break;
@@ -779,7 +779,7 @@ function updateBowling() {
         }
     }
 }
-  <script>
+    <script>
 // ============ УПРАВЛЕНИЕ ============
 canvas.addEventListener('mousemove', e => {
     let rect = canvas.getBoundingClientRect();
